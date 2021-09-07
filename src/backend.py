@@ -11,7 +11,7 @@ class KeysDatabase:
 
         # Ensure all parameters received
         if db:
-            self.conn=sqlite3.connect(db)
+            self.conn=sqlite3.connect(db,timeout=10)
             self.cur=self.conn.cursor()
             self.cur.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username text, hash text)")
             self.cur.execute("CREATE TABLE IF NOT EXISTS list (id INTEGER PRIMARY KEY, user_id INTEGER, app text,username text, key text)")
@@ -44,11 +44,16 @@ class KeysDatabase:
             return -2
 
     #Need to be changed
-    def search_user(self, username=""):
+    def search_user(self, username = "", user_id = ""):
 
         # Ensure all parameters received
         if username:
             self.cur.execute("SELECT * FROM users WHERE username = ?",(username,))
+            rows=self.cur.fetchall()
+            return rows
+
+        elif user_id:
+            self.cur.execute("SELECT * FROM users WHERE id = ?",(user_id,))
             rows=self.cur.fetchall()
             return rows
 
@@ -90,6 +95,17 @@ class KeysDatabase:
         else:
             return -2
 
+    def update_user(self, user_id = "", key = ""):
+        # Ensure all parameters received
+        if user_id and key:
+            self.cur.execute("UPDATE users SET hash = ? WHERE id = ?",(key, user_id))
+            self.conn.commit()
+            return 0
+            
+        # Error - missing info
+        else:
+            return -1
+
     def __del__(self):
         self.conn.close()
 
@@ -99,7 +115,7 @@ class HashDatabase:
     def __init__(self,db):
         # Ensure all parameters received
         if db:
-            self.conn=sqlite3.connect(db)
+            self.conn=sqlite3.connect(db,timeout=10)
             self.cur=self.conn.cursor()
             self.cur.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username text, hash text)")
             self.cur.execute("CREATE TABLE IF NOT EXISTS list (id INTEGER PRIMARY KEY, user_id INTEGER, app text,username text, hash text, comment text, date_mod date, time_mod time)")
@@ -130,18 +146,18 @@ class HashDatabase:
         else:
             return -1
 
-    # def view(self):
-    #     self.cur.execute("SELECT * FROM book")
-    #     rows=self.cur.fetchall()
-    #     return rows
 
-    def search_user(self, username = ""):
+    def search_user(self, username = "", user_id = ""):
         # Ensure all parameters received
         if username:
             self.cur.execute("SELECT * FROM users WHERE username = ?",(username,))
             rows=self.cur.fetchall()
             return rows
 
+        elif user_id:
+            self.cur.execute("SELECT * FROM users WHERE id = ?",(user_id,))
+            rows=self.cur.fetchall()
+            return rows
         # Error - missing info
         else:
             return -1
@@ -191,6 +207,17 @@ class HashDatabase:
         else:
             return -1
 
+    def update_user(self, user_id = "", ha = ""):
+        # Ensure all parameters received
+        if user_id and ha:
+            self.cur.execute("UPDATE users SET hash = ? WHERE id = ?",(ha, user_id))
+            self.conn.commit()
+            return 0
+
+        # Error - missing info
+        else:
+            return -1
+
     def update_comment(self, user_id = "", app = "", username = "", comment = ""):
         if username and  app and comment:
             self.cur.execute("UPDATE list SET comment = ? WHERE user_id = ? AND app = ? AND username = ?",(comment, user_id ,app, username))
@@ -208,3 +235,13 @@ class HashDatabase:
 
     def __del__(self):
         self.conn.close()
+
+# keys = HashDatabase("Hash.db")
+# print(keys.search_hash(1,"dolingo"))
+# keys.insert_user("av", "saaa0")
+# [time,date] = date_time()
+# keys.insert_hash(1,"dolingo","lll", "dsd9io",date,time)
+# print(keys.delete_hash(1,"dolingo","Hello"))
+# print(keys.search_hash(1,"dolingo"))
+# keys.update_hash(1,"dolingo","lll")
+# print(keys.search_hash(1,"dolingo"))

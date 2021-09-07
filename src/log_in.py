@@ -5,6 +5,7 @@ from pass_check import pass_check
 from backend import KeysDatabase, HashDatabase
 from cryptography.fernet import Fernet
 from main import main
+from encryption import encrypt, decrypt
 
 # Window's Theme
 sg.theme('DarkTeal12')
@@ -107,8 +108,8 @@ while True:
             db_hash = HashDatabase(values['-hash-'])
 
             # Search users in both databases
-            hash_usr = db_hash.search_user(values['-user-'])
-            key_usr= db_key.search_user(values['-user-'])
+            hash_usr = db_hash.search_user(username = values['-user-'])
+            key_usr= db_key.search_user(username = values['-user-'])
 
             # Ensure list is not empty
             if hash_usr and key_usr:
@@ -120,31 +121,33 @@ while True:
                 # Ensure username is equal in both tables (both dbs)
                 if key_usr[1] == hash_usr[1]:
 
-                    #### Repeat
-                    # Define Cipher Suite using the key
-                    cipher_suite = Fernet(key_usr[2])
+                    # #### Repeat
+                    # # Define Cipher Suite using the key
+                    # cipher_suite = Fernet(key_usr[2])
 
-                    # Decrypt password
-                    unciphered_text = str(cipher_suite.decrypt(hash_usr[2])).replace('b','').replace('\'','').replace("\"","")
+                    # # Decrypt password
+                    # unciphered_text = str(cipher_suite.decrypt(hash_usr[2])).replace('b','').replace('\'','').replace("\"","")
+                    unciphered_text = decrypt(key_usr[2],hash_usr[2])
 
                     # Ensure decrypted password equal the password entered by the user
                     # In this case - Log In Successfully!
                     if unciphered_text == values['-pass-']:
+                        window.close()
                         main(key_usr[0], values['-keys-'], hash_usr[0], values['-hash-'])
-                        break
+                        
                          
 
                     # Error - password incorrect
                     else:
-                        sg.popup_error("Username and/or password are incorrect!")
+                        sg.popup_error("Username and/or password are incorrect!", title = "Error!")
 
                 # Error - Username incorrect
                 else:
-                    sg.popup_error("Username and/or password are incorrect!")
+                    sg.popup_error("Username and/or password are incorrect!",title = "Error!")
 
             # Error - No username found in database
             else:
-                sg.popup_error("No username found!")
+                sg.popup_error("No username found!",title = "Error!")
         
 
 

@@ -1,9 +1,9 @@
 import PySimpleGUI as sg
 from backend import KeysDatabase, HashDatabase
 from pass_check import pass_check
-from cryptography.fernet import Fernet, InvalidToken
 from other import notes
-
+from encryption import encrypt, decrypt
+from change_pwd import change_pwd
 
 def main(key_id, keys_path, hash_id, hash_path):
     #----------------------------------------------------#
@@ -44,7 +44,8 @@ def main(key_id, keys_path, hash_id, hash_path):
     message = sg.Frame(' Message ', [[sg.Multiline( key = '-msg-',size = (35,17)) ]])
 
     # Buttons
-    buttons = [sg.Button("Exit",size = (6,1), border_width = 0, button_color = ('white','#ff6666'), tooltip = "Back to Log In")]
+    buttons = [sg.Button("Account",size = (7,1), border_width = 0, button_color = ('white','#00b300'), tooltip = "Click to change your log in password to this program"),
+               sg.Button("Exit",size = (7,1), border_width = 0, button_color = ('white','#ff6666'), tooltip = "Back to Log In")]
 
     layout = [[sg.T()], # Blank space
         
@@ -111,29 +112,26 @@ def main(key_id, keys_path, hash_id, hash_path):
         # Save values in variables
         return values['-app-'], values['-user-'],values['-pass-'], values['-comment-']
 
-    def encrypt(app, username, password, comment, index):
-        
+    def insert_encryption(app, username, password, comment, index):
 
-        # Generate a new key
-        key = Fernet.generate_key()
+        key, ciphered_text = encrypt(password)
 
-        # Encrypt password with special key
-        cipher_suite = Fernet(key)
-        ciphered_text = cipher_suite.encrypt(str.encode(password))
+        if key and ciphered_text:
+            if index == 1:
+                # Store encrypted password in database
+                h_db.insert_hash(key_id, app, username, ciphered_text, comment)
 
-        if index == 1:
-            # Store encrypted password in database
-            h_db.insert_hash(key_id, app, username, ciphered_text, comment)
+                # Store key in database
+                k_db.insert_key(key_id,app ,username, key)
 
-            # Store key in database
-            k_db.insert_key(key_id,app ,username, key)
+            else:
+                # Store updated hash in database
+                h_db.update_hash(key_id, app, username, ciphered_text, comment)
 
+                # Store updated key in database
+                k_db.update_key(key_id,app ,username, key)
         else:
-            # Store updated hash in database
-            h_db.update_hash(key_id, app, username, ciphered_text, comment)
-
-            # Store updated key in database
-            k_db.update_key(key_id,app ,username, key)
+            update_msg("Error: didn't encrypt")
 
 
     #----------------------------------------------------#
@@ -192,23 +190,13 @@ def main(key_id, keys_path, hash_id, hash_path):
                     sg.popup_error("Something went wrong")
 
                 else:
-                    #### Repeat
-                     # Define Cipher Suite using the key
-                    cipher_suite = Fernet(k_row[0][4])
+                    pwd = decrypt(k_row[0][4],h_row[0][4])
 
-                    try:
-                        # Decrypt password
-                        unciphered_text = str(cipher_suite.decrypt(h_row[0][4])).replace('b','').replace('\'','').replace("\"","")
-                        decrypted = True
-
-                    except InvalidToken:
-                        decrypted = False
-
-                    if decrypted:
+                    if pwd:
                         # Update Fields
-                        update_fields(app,username,unciphered_text,h_row[0][5])
+                        update_fields(app,username,pwd,h_row[0][5])
 
-                        current_pwd = unciphered_text 
+                        current_pwd = pwd 
                         current_usr = username
                         current_app = app
                     
@@ -230,7 +218,7 @@ def main(key_id, keys_path, hash_id, hash_path):
                 # Ensure it is a new user
                 if username != current_usr:
 
-                    encrypt(app,username,password,comment,1)
+                    insert_encryption(app,username,password,comment,1)
 
                     # Clear inputs
                     update_fields()
@@ -299,7 +287,7 @@ def main(key_id, keys_path, hash_id, hash_path):
                     if l == "Yes":
 
                         # Encrypt new password and update database
-                        encrypt(app,username,password,comment,0)
+                        insert_encryption(app,username,password,comment,0)
 
                         # Inform the user 
                         update_msg("Password was updated!")
@@ -310,9 +298,25 @@ def main(key_id, keys_path, hash_id, hash_path):
                     # Inform the user 
                     update_msg("Comment was updated!")
 
+        if event == "Account":
+            hash_r = h_db.search_user(user_id = hash_id)
+            key_r = k_db.search_user(user_id = key_id)
+            if hash_r and key_r:
+                hash_r = hash_r[0]
+                key_r = key_r[0]
+
+            curr = decrypt(key_r[2],hash_r[2])
+            window.Hide()
+            new_pass = change_pwd(curr)
+            if new_pass:
+                key, ciphered_text = encrypt(new_pass)
+                k_db.update_user(key_id,key)
+                h_db.update_user(hash_id,ciphered_text)
+                update_msg("Successfully Changed")
+            window.UnHide()
 
     # Close Window
     window.close()
 
 
-main(1,"/Users/avivfaraj/Desktop/Project/4/keys.db",1,"/Users/avivfaraj/Desktop/Project/4/hash.db")
+main(1,"/Users/avivfaraj/Desktop/Project/5/keys.db",1,"/Users/avivfaraj/Desktop/Project/5/hash.db")
