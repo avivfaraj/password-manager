@@ -61,16 +61,11 @@ layout = [[sg.T()], # Blank space
 
     # Buttons 
     buttons,
-
-    [sg.T()],
-    [sg.T()],
-
-    [sg.T("Password Manager was created by Aviv Faraj, Yehud-Monosson, Israel.",text_color = "White",size=(70, 1), justification='center')],
     ]
 
 
 # Create Window
-window = sg.Window('Log In', layout,element_justification='center', size = (700,500),finalize = True)
+window = sg.Window('Log In', layout,element_justification='center', size = (700,440),finalize = True)
 
 
 # Functions: 
