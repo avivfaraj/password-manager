@@ -38,11 +38,11 @@ and check wether they were leaked before using Have I Been Pwned database.
 
 ## Packages
 
-* [Have I Been Pwned](https://haveibeenpwned.com/){:target="_blank"}  - The database used to check if password was leaked before
-* [PySimpleGUI](https://pysimplegui.readthedocs.io/en/latest/){:target="_blank"}  - Created the GUI
-* [cryptography.fernet](https://github.com/pyca/cryptography){:target="_blank"}  - Encrypt and decrypt passwords
-* [ReportLab](https://www.reportlab.com/){:target="_blank"}  - Generate a password protected PDF file with all usernames and passwords
-* [sqlite3](https://www.sqlite.org/index.html){:target="_blank"}  - Create and manage database
-* [hashlib](https://docs.python.org/3/library/hashlib.html){:target="_blank"}  - Create SH-1 hash to be used with Have I Been Pwned database
-* [requests](https://requests.readthedocs.io/en/master/){:target="_blank"}  - Create GET requests from website
+* [Have I Been Pwned](https://haveibeenpwned.com/) - The database used to check if password was leaked before
+* [PySimpleGUI](https://pysimplegui.readthedocs.io/en/latest/) - Created the GUI
+* [cryptography.fernet](https://github.com/pyca/cryptography) - Encrypt and decrypt passwords
+* [ReportLab](https://www.reportlab.com/) - Generate a password protected PDF file with all usernames and passwords
+* [sqlite3](https://www.sqlite.org/index.html) - Create and manage database
+* [hashlib](https://docs.python.org/3/library/hashlib.html) - Create SH-1 hash to be used with Have I Been Pwned database
+* [requests](https://requests.readthedocs.io/en/master/) - Create GET requests from website
 
