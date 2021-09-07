@@ -1,8 +1,8 @@
 import PySimpleGUI as sg
 from backend import KeysDatabase, HashDatabase
 from pass_check import pass_check
-from cryptography.fernet import Fernet
-
+from cryptography.fernet import Fernet, InvalidToken
+from other import notes
 
 
 def main(key_id, keys_path, hash_id, hash_path):
@@ -73,23 +73,68 @@ def main(key_id, keys_path, hash_id, hash_path):
 
     def update_fields(app = "", username = "", password = "", comment = ""):
         # Clear Fields
-        window[ls[0]].update(app)
-        window[ls[1]].update(username)
-        window[ls[2]].update(password)
-        window[ls[3]].update(comment)
+        window['-app-'].update(app)
+        window['-user-'].update(username)
+        window['-pass-'].update(password)
+        window['-comment-'].update(comment)
 
     def update_list(rows = ""):
+        # Get all passwords
         if not rows:
             rows = h_db.view(hash_id)
 
+        # Ensure rows is not empty
         if rows:
+
+            # Initialize parmeters
             _,elements = [],[]
+
+            # Iterate over rows
             for row in rows:
-                _ = [row[2],row[3]]
+                # Append to list of elements
+                _ = [row[2],row[3],row[7], row[6]]
                 elements.append(_)
+
+            # Clear and update list
             window['-ls-'].update([])
             window.Refresh()
             window['-ls-'].update(elements)
+
+    def update_msg(msg):
+        # Construct a new message
+        new = notes(msg, values['-msg-'])
+
+        # Update msg element
+        window['-msg-'].update(new)
+
+    def fields_values():
+        # Save values in variables
+        return values['-app-'], values['-user-'],values['-pass-'], values['-comment-']
+
+    def encrypt(app, username, password, comment, index):
+        
+
+        # Generate a new key
+        key = Fernet.generate_key()
+
+        # Encrypt password with special key
+        cipher_suite = Fernet(key)
+        ciphered_text = cipher_suite.encrypt(str.encode(password))
+
+        if index == 1:
+            # Store encrypted password in database
+            h_db.insert_hash(key_id, app, username, ciphered_text, comment)
+
+            # Store key in database
+            k_db.insert_key(key_id,app ,username, key)
+
+        else:
+            # Store updated hash in database
+            h_db.update_hash(key_id, app, username, ciphered_text, comment)
+
+            # Store updated key in database
+            k_db.update_key(key_id,app ,username, key)
+
 
     #----------------------------------------------------#
 
@@ -100,9 +145,10 @@ def main(key_id, keys_path, hash_id, hash_path):
     k_db = KeysDatabase(keys_path)
     h_db = HashDatabase(hash_path)
 
-    ls = ['-app-','-user-','-pass-','-comment-']
-
     update_list()
+
+    current_pwd, current_usr,crrent_app = "", "", ""
+    decrypted = False
 
     while True:
 
@@ -137,123 +183,136 @@ def main(key_id, keys_path, hash_id, hash_path):
                 window['-pass-'].update(generated_pwd)
 
         if event == '-ls-':
-            [app, username] = values['-ls-'][0]
-            h_row = h_db.search_hash(hash_id,app,username)
-            k_row = k_db.search_key(key_id,app,username)
+            if values['-ls-']:
+                [app, username, time_mod, date_mod] = values['-ls-'][0]
+                h_row = h_db.search_hash(hash_id,app,username)
+                k_row = k_db.search_key(key_id,app,username)
 
-            if h_row == -1 or k_row == -2:
-                sg.popup_error("Something went wrong")
+                if h_row == -1 or k_row == -2:
+                    sg.popup_error("Something went wrong")
 
-            else:
-                #### Repeat
-                 # Define Cipher Suite using the key
-                cipher_suite = Fernet(k_row[0][4])
+                else:
+                    #### Repeat
+                     # Define Cipher Suite using the key
+                    cipher_suite = Fernet(k_row[0][4])
 
-                # Decrypt password
-                unciphered_text = str(cipher_suite.decrypt(h_row[0][4])).replace('b','').replace('\'','').replace("\"","")
+                    try:
+                        # Decrypt password
+                        unciphered_text = str(cipher_suite.decrypt(h_row[0][4])).replace('b','').replace('\'','').replace("\"","")
+                        decrypted = True
 
-                # Update Fields
-                update_fields(app,username,unciphered_text,h_row[0][5])
+                    except InvalidToken:
+                        decrypted = False
+
+                    if decrypted:
+                        # Update Fields
+                        update_fields(app,username,unciphered_text,h_row[0][5])
+
+                        current_pwd = unciphered_text 
+                        current_usr = username
+                        current_app = app
+                    
+                    else:
+                        update_fields()
+
+                        current_pwd, current_usr = "", ""
+
+                        update_msg("Error: Something Went Wrong. Key doesn't match")
 
 
         if event == "Add":
-
-            # Save values in variables
-            app, username, password, comment = values[ls[0]], values[ls[1]], values[ls[2]], values[ls[3]]
+            # Store values in variables
+            app, username, password, comment = fields_values()
 
             # Ensure parameters were filled by the user
             if app and username and password:
 
-                # Generate a new key
-                key = Fernet.generate_key()
+                # Ensure it is a new user
+                if username != current_usr:
 
-                # Save key in database
-                k_db.insert_key(key_id,app ,username, key)
+                    encrypt(app,username,password,comment,1)
 
-                # Encrypt password with special key
-                cipher_suite = Fernet(key)
-                ciphered_text = cipher_suite.encrypt(str.encode(password))
+                    # Clear inputs
+                    update_fields()
 
-                # Save encrypted password in database
-                h_db.insert_hash(key_id, app, username, ciphered_text, comment)
+                    # Update List of apps and usernames
+                    update_list()
 
-                # Clear inputs
-                update_fields()
-
-                # Update List of apps and usernames
-                update_list()
+                    # Inform the user 
+                    update_msg("Successfully Added!")
 
 
         if event == "Delete":
 
-            # Save values in variables
-            app, username = values[ls[0]], values[ls[1]]
+            # Store values in variables
+            app, username, _, _ = fields_values()
+            if username == current_usr and current_app == app:
+                l = sg.popup_yes_no("You are about to delete an account in database.\n once deleted it's gone. Are you sure?",title = "Delete an item", keep_on_top = True)
 
-            # Ensure fields were given
-            if app and username:
+                if l == "Yes":
 
-                # Delete password hash
-                _ = h_db.delete_hash(hash_id,app,username)
+                    # Ensure fields were given
+                    if app and username:
 
-                # Ensure password deleted before deleting key!
-                if _ == 0:
-                    k_db.delete_key(key_id,app,username)
+                        # Delete password hash
+                        _ = h_db.delete_hash(hash_id,app,username)
 
-                # Clear inputs
-                update_fields()
+                        # Ensure password deleted before deleting key!
+                        if _ == 0:
+                            k_db.delete_key(key_id,app,username)
 
-                # Update List of apps and usernames
-                update_list()
+                        # Clear inputs
+                        update_fields()
+
+                        # Update List of apps and usernames
+                        update_list()
+
+                        # Inform the user 
+                        update_msg("Item Deleted!")
 
         if event == "Search":
             # Save values in variables
-            app, username = values[ls[0]], values[ls[1]]
+            app, username, _, _ = fields_values()
 
             if app:
                 rows = h_db.search_hash(hash_id, app, username)
 
                 if rows != -1:
                     update_list(rows)
+
+                if not rows:
+                    window['-ls-'].update([])
             else:
                 update_list()
+
+        if event == "Update":
+
+            # Store values in variables
+            app, username, password, comment = fields_values()
+
+            if username == current_usr:
+
+                if current_pwd != password:
+
+                    l = sg.popup_yes_no("You are about to update password for an account in database.\n Once updated the current password and key are gone. Are you sure?",title = "Update Password", keep_on_top = True)
+
+                    if l == "Yes":
+
+                        # Encrypt new password and update database
+                        encrypt(app,username,password,comment,0)
+
+                        # Inform the user 
+                        update_msg("Password was updated!")
+
+                else:
+                    h_db.update_comment(hash_id, app, username, comment)
+
+                    # Inform the user 
+                    update_msg("Comment was updated!")
 
 
     # Close Window
     window.close()
 
 
-main(1,"/Users/avivfaraj/Desktop/Project/3/keys.db",1,"/Users/avivfaraj/Desktop/Project/3/hash.db")
-
-
-##########################
-# import PySimpleGUI as sg
-
-# tasks = [["something", "Wow"], "something2", "something3"]
-
-# layout = [
-#     [sg.Text('ToDo')],
-#     [sg.InputText('Enter ToDo Item', key='todo_item'), sg.Button(button_text='Add', key="add_save")],
-#     [sg.Listbox(values=tasks, size=(40, 10), key="items"), sg.Button('Delete'), sg.Button('Edit')],
-# ]
-
-# window = sg.Window('ToDo App', layout)
-# while True:  # Event Loop
-#     event, values = window.Read()
-#     if event == "add_save":
-#         tasks.append(values['todo_item'])
-#         window.FindElement('items').Update(values=tasks)
-#         window.FindElement('add_save').Update("Add")
-#     elif event == "Delete":
-#         tasks.remove(values["items"][0])
-#         window.FindElement('items').Update(values=tasks)
-#     elif event == "Edit":
-#         edit_val = values["items"][0]
-#         sg.Print(edit_val)
-#         # tasks.remove(values["items"][0])
-#         # window.FindElement('items').Update(values=tasks)
-#         # window.FindElement('todo_item').Update(value=edit_val)
-#         # window.FindElement('add_save').Update("Save")
-#     elif event == None:
-#         break
-
-# window.Close()
+main(1,"/Users/avivfaraj/Desktop/Project/4/keys.db",1,"/Users/avivfaraj/Desktop/Project/4/hash.db")

@@ -180,6 +180,7 @@ class HashDatabase:
     def update_hash(self, user_id = "" ,app = "" ,username = "" , _hash = "", comment = ""):
 
         # Ensure all parameters received
+        
         if username and _hash and app and user_id and comment:
             [time, date] = date_time()
             self.cur.execute("UPDATE list SET hash = ?, comment = ? ,time_mod = ?, date_mod = ? WHERE user_id = ? AND app = ? AND username = ?",
@@ -187,6 +188,13 @@ class HashDatabase:
             self.conn.commit()
         
         # Error - missing info
+        else:
+            return -1
+
+    def update_comment(self, user_id = "", app = "", username = "", comment = ""):
+        if username and  app and comment:
+            self.cur.execute("UPDATE list SET comment = ? WHERE user_id = ? AND app = ? AND username = ?",(comment, user_id ,app, username))
+            self.conn.commit()
         else:
             return -1
 
@@ -200,13 +208,3 @@ class HashDatabase:
 
     def __del__(self):
         self.conn.close()
-
-# keys = HashDatabase("Hash.db")
-# print(keys.search_hash(1,"dolingo"))
-# keys.insert_user("av", "saaa0")
-# [time,date] = date_time()
-# keys.insert_hash(1,"dolingo","lll", "dsd9io",date,time)
-# print(keys.delete_hash(1,"dolingo","Hello"))
-# print(keys.search_hash(1,"dolingo"))
-# keys.update_hash(1,"dolingo","lll")
-# print(keys.search_hash(1,"dolingo"))

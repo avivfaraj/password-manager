@@ -3,7 +3,7 @@ import PySimpleGUI as sg
 from datetime import datetime
 from check import check_pass, is_strong
 from generate_pass import generate_pass
-
+from other import notes, date_time
 
 def pass_check():
 
@@ -14,6 +14,7 @@ def pass_check():
     sg.theme('DarkTeal12')
 
     # Set Window Options - Default Font
+    form = sg.FlexForm('Everything bagel' ,default_element_size=(40, 1))
     sg.SetOptions(font =("David", 15),slider_orientation='h')
 
     # Password row
@@ -102,28 +103,29 @@ def pass_check():
         else:
             msg = "Please enter password!"
 
-        message(msg)
+        msg= notes(msg, values['-message-'])
+        window['-message-'].update(msg)
 
         return 0
 
-    def message(msg):
-        # Get date and time as string
-        time = date_time()
+    # def message(msg):
+    #     # Get date and time as string
+    #     time = date_time()
 
-        # Construct a message including date and time
-        message = "*** " +time +"*** " + msg 
+    #     # Construct a message including date and time
+    #     message = "*** " +time +"*** " + msg 
 
-        # Construct a message including the previous ones
-        old = values['-message-']
-        new = message +"\n" + old
+    #     # Construct a message including the previous ones
+    #     old = values['-message-']
+    #     new = message +"\n" + old
 
-        window['-message-'].update(new)
+    #     window['-message-'].update(new)
         
 
-    # 2. Return string of date and time
-    def date_time():
-        time = datetime.now()
-        return time.strftime("%H:%M:%S")
+    # # 2. Return string of date and time
+    # def date_time():
+    #     time = datetime.now()
+    #     return time.strftime("%H:%M:%S")
 
 
     def generate_pwd():
@@ -155,7 +157,9 @@ def pass_check():
             msg = "No password was generated"
 
         # Display the message by updating text (-pass-)
-        message(msg)
+        # sg.Print(values['-message-'])
+        msg = notes(msg, values['-message-'])
+        window['-message-'].update(msg)
 
     # -----------------------------------------------------#
 

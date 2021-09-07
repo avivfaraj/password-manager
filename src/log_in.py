@@ -64,7 +64,7 @@ layout = [[sg.T()], # Blank space
 
 
 # Create Window
-window = sg.Window('Password Manager', layout,element_justification='center', size = (700,425),finalize = True)
+window = sg.Window('Log In', layout,element_justification='center', size = (700,425),finalize = True)
 
 
 # Functions: 
@@ -100,49 +100,51 @@ while True:
 
     # Log In Event
     if event == 'Log In':
-        # Connect to database
-        db_key = KeysDatabase(values['-keys-'])
-        db_hash = HashDatabase(values['-hash-'])
 
-        # Search users in both databases
-        hash_usr = db_hash.search_user(values['-user-'])
-        key_usr= db_key.search_user(values['-user-'])
+        if values['-keys-'] and values['-hash-'] and values['-user-'] and values['-pass-']:
+            # Connect to database
+            db_key = KeysDatabase(values['-keys-'])
+            db_hash = HashDatabase(values['-hash-'])
 
-        # Ensure list is not empty
-        if hash_usr and key_usr:
+            # Search users in both databases
+            hash_usr = db_hash.search_user(values['-user-'])
+            key_usr= db_key.search_user(values['-user-'])
 
-            # Take first element
-            hash_usr = hash_usr[0]
-            key_usr = key_usr[0]
+            # Ensure list is not empty
+            if hash_usr and key_usr:
 
-            # Ensure username is equal in both tables (both dbs)
-            if key_usr[1] == hash_usr[1]:
+                # Take first element
+                hash_usr = hash_usr[0]
+                key_usr = key_usr[0]
 
-                #### Repeat
-                # Define Cipher Suite using the key
-                cipher_suite = Fernet(key_usr[2])
+                # Ensure username is equal in both tables (both dbs)
+                if key_usr[1] == hash_usr[1]:
 
-                # Decrypt password
-                unciphered_text = str(cipher_suite.decrypt(hash_usr[2])).replace('b','').replace('\'','').replace("\"","")
+                    #### Repeat
+                    # Define Cipher Suite using the key
+                    cipher_suite = Fernet(key_usr[2])
 
-                # Ensure decrypted password equal the password entered by the user
-                # In this case - Log In Successfully!
-                if unciphered_text == values['-pass-']:
-                    main(key_usr[0], values['-keys-'], hash_usr[0], values['-hash-'])
-                    break
-                     
+                    # Decrypt password
+                    unciphered_text = str(cipher_suite.decrypt(hash_usr[2])).replace('b','').replace('\'','').replace("\"","")
 
-                # Error - password incorrect
+                    # Ensure decrypted password equal the password entered by the user
+                    # In this case - Log In Successfully!
+                    if unciphered_text == values['-pass-']:
+                        main(key_usr[0], values['-keys-'], hash_usr[0], values['-hash-'])
+                        break
+                         
+
+                    # Error - password incorrect
+                    else:
+                        sg.popup_error("Username and/or password are incorrect!")
+
+                # Error - Username incorrect
                 else:
                     sg.popup_error("Username and/or password are incorrect!")
 
-            # Error - Username incorrect
+            # Error - No username found in database
             else:
-                sg.popup_error("Username and/or password are incorrect!")
-
-        # Error - No username found in database
-        else:
-            sg.popup_error("No username found!")
+                sg.popup_error("No username found!")
         
 
 

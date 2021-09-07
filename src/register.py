@@ -66,7 +66,7 @@ def register():
 
 
     # Create Window
-    window = sg.Window('Password Manager', layout,element_justification='center', size = (700,425),finalize = True)
+    window = sg.Window('Register', layout,element_justification='center', size = (700,425),finalize = True)
     
     #----------------------------------------------------#
 
