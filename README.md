@@ -22,8 +22,8 @@ and check wether they were leaked before using Have I Been Pwned database.
      ```echo 'py2app' >>./requirements.txt```
    - For Windows user open cmd at the repo folder and run: <br>
      ```echo py2exe >> requirements.txt```
-  <br>
-  If that doesn't work, add it manually to requirements.txt
+  
+  If that doesn't work, add it manually to requirements.txt<br>
    
 3. Install all requirements by running the command:<br>
    ```pip install -r requirements.txt```
