@@ -110,7 +110,7 @@ def register():
                 k_db = KeysDatabase(keys_path)
 
                 # Create hash.db
-                hsh_path = keys + "/hash.db" 
+                hsh_path = hashes + "/hash.db" 
                 h_db = HashDatabase(hsh_path)
 
                 

@@ -120,4 +120,3 @@ def change_pwd(current_pass):
     window.close()
 
     return new_1
-# change_pwd(1,"/Users/avivfaraj/Desktop/Project/5/keys.db",1,"/Users/avivfaraj/Desktop/Project/5/hash.db")

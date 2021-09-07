@@ -108,26 +108,6 @@ def pass_check():
 
         return 0
 
-    # def message(msg):
-    #     # Get date and time as string
-    #     time = date_time()
-
-    #     # Construct a message including date and time
-    #     message = "*** " +time +"*** " + msg 
-
-    #     # Construct a message including the previous ones
-    #     old = values['-message-']
-    #     new = message +"\n" + old
-
-    #     window['-message-'].update(new)
-        
-
-    # # 2. Return string of date and time
-    # def date_time():
-    #     time = datetime.now()
-    #     return time.strftime("%H:%M:%S")
-
-
     def generate_pwd():
 
         # Number of letters, numbers and symbols in the generated password

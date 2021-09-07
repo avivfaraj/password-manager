@@ -24,8 +24,8 @@ def decrypt(key, _hash):
 
     try:
         # Decrypt password
-        unciphered_text = str(cipher_suite.decrypt(_hash)).replace('b','').replace('\'','').replace("\"","")
-        return unciphered_text
+        unciphered_text = str(cipher_suite.decrypt(_hash)).replace('\'','').replace("\"","")
+        return unciphered_text[1:]
 
     except InvalidToken:
         return ""

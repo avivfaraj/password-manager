@@ -4,6 +4,8 @@ from pass_check import pass_check
 from other import notes
 from encryption import encrypt, decrypt
 from change_pwd import change_pwd
+from createPDF import PDF
+import os
 
 def main(key_id, keys_path, hash_id, hash_path):
     #----------------------------------------------------#
@@ -44,8 +46,9 @@ def main(key_id, keys_path, hash_id, hash_path):
     message = sg.Frame(' Message ', [[sg.Multiline( key = '-msg-',size = (35,17)) ]])
 
     # Buttons
-    buttons = [sg.Button("Account",size = (7,1), border_width = 0, button_color = ('white','#00b300'), tooltip = "Click to change your log in password to this program"),
-               sg.Button("Exit",size = (7,1), border_width = 0, button_color = ('white','#ff6666'), tooltip = "Back to Log In")]
+    buttons = [sg.Button("Account",size = (9,1), border_width = 0, button_color = ('white','#00b300'), tooltip = "Click to change your log in password to this program"),
+               sg.Button("Create PDF",size = (9,1), border_width = 0, button_color = ('white','#4B0082'), tooltip = "Create a password protected pdf file"),
+               sg.Button("Exit",size = (9,1), border_width = 0, button_color = ('white','#ff6666'), tooltip = "Back to Log In")]
 
     layout = [[sg.T()], # Blank space
         
@@ -133,6 +136,23 @@ def main(key_id, keys_path, hash_id, hash_path):
         else:
             update_msg("Error: didn't encrypt")
 
+    def manager_password():
+
+        # Search for this user in db
+        hash_r = h_db.search_user(user_id = hash_id)
+        key_r = k_db.search_user(user_id = key_id)
+
+        curr = ""
+
+        # Ensure found
+        if hash_r and key_r:
+            hash_r = hash_r[0]
+            key_r = key_r[0]
+            curr = decrypt(key_r[2],hash_r[2])
+
+        # Return password
+        return curr
+
 
     #----------------------------------------------------#
 
@@ -143,9 +163,11 @@ def main(key_id, keys_path, hash_id, hash_path):
     k_db = KeysDatabase(keys_path)
     h_db = HashDatabase(hash_path)
 
+    # Update list with the data from db
     update_list()
 
-    current_pwd, current_usr,crrent_app = "", "", ""
+    # Initialize variables
+    current_pwd, current_usr,current_app = "", "", ""
     decrypted = False
 
     while True:
@@ -180,31 +202,48 @@ def main(key_id, keys_path, hash_id, hash_path):
             if generated_pwd != "":
                 window['-pass-'].update(generated_pwd)
 
+        # Chose one row from list
         if event == '-ls-':
+
+            # Ensure row is not empty
             if values['-ls-']:
+
+                # Get values from list
                 [app, username, time_mod, date_mod] = values['-ls-'][0]
+
+                # Search in dbs
                 h_row = h_db.search_hash(hash_id,app,username)
                 k_row = k_db.search_key(key_id,app,username)
 
+                # Ensure there were not errors
                 if h_row == -1 or k_row == -2:
                     sg.popup_error("Something went wrong")
 
+                # No error occured
                 else:
+                    # Decrypt password
                     pwd = decrypt(k_row[0][4],h_row[0][4])
 
+                    # Ensure no error in decryption
                     if pwd:
+
                         # Update Fields
                         update_fields(app,username,pwd,h_row[0][5])
 
+                        # Update variables to current row
                         current_pwd = pwd 
                         current_usr = username
                         current_app = app
                     
+                    # An error occured 
                     else:
+                        # Show all data in list
                         update_fields()
 
-                        current_pwd, current_usr = "", ""
+                        # Clear variables
+                        current_pwd, current_usr, current_app = "", "", ""
 
+                        # Inform the user
                         update_msg("Error: Something Went Wrong. Key doesn't match")
 
 
@@ -216,7 +255,7 @@ def main(key_id, keys_path, hash_id, hash_path):
             if app and username and password:
 
                 # Ensure it is a new user
-                if username != current_usr:
+                if username != current_usr or app != current_app:
 
                     insert_encryption(app,username,password,comment,1)
 
@@ -293,30 +332,72 @@ def main(key_id, keys_path, hash_id, hash_path):
                         update_msg("Password was updated!")
 
                 else:
+                    # Update comment in database
                     h_db.update_comment(hash_id, app, username, comment)
 
                     # Inform the user 
                     update_msg("Comment was updated!")
 
-        if event == "Account":
-            hash_r = h_db.search_user(user_id = hash_id)
-            key_r = k_db.search_user(user_id = key_id)
-            if hash_r and key_r:
-                hash_r = hash_r[0]
-                key_r = key_r[0]
 
-            curr = decrypt(key_r[2],hash_r[2])
+        if event == "Account":
+            # Application Password
+            curr = manager_password()
+            
+            # Hide this window
             window.Hide()
+
+            # Get a new password from user
             new_pass = change_pwd(curr)
+
+            # Ensure new password is not empty
             if new_pass:
+
+                # Encrypt new password
                 key, ciphered_text = encrypt(new_pass)
+
+                # Update key db
                 k_db.update_user(key_id,key)
+
+                # Update hash db
                 h_db.update_user(hash_id,ciphered_text)
+
+                # Inform user
                 update_msg("Successfully Changed")
+
+            # Back to main.py
             window.UnHide()
+
+        if event == "Create PDF":
+            curr = manager_password()
+
+            # Get hash and keys data from dbs
+            h_rows = h_db.view(hash_id)
+            k_rows = k_db.view(key_id)
+
+            # Initialize Para
+            ls = []
+            pwd = ""
+
+            # Ensure rows are not empty
+            if h_rows and k_rows:
+
+                # Iterate over hash and keys
+                for _hash, key in zip(h_rows,k_rows):
+
+                    # Decrypt password
+                    pwd = decrypt(key[4],_hash[4])
+
+                    # Append a row to list: [Application, Username, Password, Time modified, Date modified]
+                    ls.append([_hash[2], _hash[3],pwd,_hash[7],_hash[6]])
+            # Create PDF 
+            _ = PDF(ls,curr)
+
+            # Ensure pdf created and inform the user
+            if _:
+                update_msg(f"PDF file named \'password.pdf\' was created in: {os.getcwd()}")
+
 
     # Close Window
     window.close()
 
 
-main(1,"/Users/avivfaraj/Desktop/Project/5/keys.db",1,"/Users/avivfaraj/Desktop/Project/5/hash.db")

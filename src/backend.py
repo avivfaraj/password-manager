@@ -104,7 +104,15 @@ class KeysDatabase:
             
         # Error - missing info
         else:
-            return -1
+            return -2
+
+    def view(self, user_id = ""):
+        if user_id:
+            self.cur.execute("SELECT * FROM list WHERE user_id = ? ORDER BY id ASC", (user_id,))
+            rows=self.cur.fetchall()
+            return rows
+        else:
+            return -2
 
     def __del__(self):
         self.conn.close()
@@ -227,7 +235,7 @@ class HashDatabase:
 
     def view(self, user_id = ""):
         if user_id:
-            self.cur.execute("SELECT * FROM list WHERE user_id = ?", (user_id,))
+            self.cur.execute("SELECT * FROM list WHERE user_id = ? ORDER BY id ASC", (user_id,))
             rows=self.cur.fetchall()
             return rows
         else:
@@ -235,13 +243,3 @@ class HashDatabase:
 
     def __del__(self):
         self.conn.close()
-
-# keys = HashDatabase("Hash.db")
-# print(keys.search_hash(1,"dolingo"))
-# keys.insert_user("av", "saaa0")
-# [time,date] = date_time()
-# keys.insert_hash(1,"dolingo","lll", "dsd9io",date,time)
-# print(keys.delete_hash(1,"dolingo","Hello"))
-# print(keys.search_hash(1,"dolingo"))
-# keys.update_hash(1,"dolingo","lll")
-# print(keys.search_hash(1,"dolingo"))
