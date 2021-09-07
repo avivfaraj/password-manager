@@ -30,8 +30,9 @@ and check wether they were leaked before using Have I Been Pwned database.
    - On Mac run the following command on Terminal:<br>
    ```python3 setup.py py2app -A```
    - On Windows run the following command on cmd:<br>
-   ```python3 setup.py py2exe```
- 
+   ```python3 setup.py py2exe```<br>
+   
+5. Two folder are created. The standalone app is in the dist folder.
  
  'Have I Been Pwned' - Internet Connection is Required
 
