@@ -15,21 +15,22 @@ and a verification. In all fields required password there is a button ("Help") t
 and check wether they were leaked before using Have I Been Pwned database.
 
 ### Setup
-1. Clone repository
+1. Clone repository <br>
    ```git clone https://github.com/avivfaraj/password-manager.git```
 3. Add either "py2app" or "py2exe" to the requirements.txt file:
-   - For Mac users open terminal at the repo folder and run:
+   - For Mac users open terminal at the repo folder and run:<br>
      ```echo 'py2app' >>./requirements.txt```
-   - For Windows user open cmd at the repo folder and run: 
+   - For Windows user open cmd at the repo folder and run: <br>
      ```echo py2exe >> requirements.txt```
-   If that doesn't work, add it manually to requirements.txt
+  <br>
+  If that doesn't work, add it manually to requirements.txt
    
-3. Install all requirements by running the command:
+3. Install all requirements by running the command:<br>
    ```pip install -r requirements.txt```
 4. Create standalone app:
-   - On Mac run the following command on Terminal:
+   - On Mac run the following command on Terminal:<br>
    ```python3 setup.py py2app -A```
-   - On Windows run the following command on cmd:
+   - On Windows run the following command on cmd:<br>
    ```python3 setup.py py2exe```
  
  
