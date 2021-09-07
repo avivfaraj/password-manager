@@ -36,7 +36,7 @@ and check wether they were leaked before using Have I Been Pwned database.
  
  'Have I Been Pwned' - Internet Connection is Required
 
-## Built With
+## Packages
 
 * [Have I Been Pwned](https://haveibeenpwned.com/) - The database used to check if password was leaked before
 * [PySimpleGUI](https://pysimplegui.readthedocs.io/en/latest/) - Created the GUI
