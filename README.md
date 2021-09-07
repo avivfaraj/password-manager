@@ -16,17 +16,17 @@ and check wether they were leaked before using Have I Been Pwned database.
 
 ### Setup
 1. Clone repository <br>
-   ```git clone https://github.com/avivfaraj/password-manager.git```
+   ```git clone https://github.com/avivfaraj/password-manager.git```<br>
 3. Add either "py2app" or "py2exe" to the requirements.txt file:
    - For Mac users open terminal at the repo folder and run:<br>
      ```echo 'py2app' >>./requirements.txt```
    - For Windows user open cmd at the repo folder and run: <br>
      ```echo py2exe >> requirements.txt```
   
-  If that doesn't work, add it manually to requirements.txt<br>
+   If that doesn't work, add it manually to requirements.txt<br>
    
 3. Install all requirements by running the command:<br>
-   ```pip install -r requirements.txt```
+   ```pip install -r requirements.txt```<br>
 4. Create standalone app:
    - On Mac run the following command on Terminal:<br>
    ```python3 setup.py py2app -A```
@@ -46,6 +46,3 @@ and check wether they were leaked before using Have I Been Pwned database.
 * [hashlib](https://docs.python.org/3/library/hashlib.html) - Create SH-1 hash to be used with Have I Been Pwned database
 * [requests](https://requests.readthedocs.io/en/master/) - Create GET requests from website
 
-## Authors
-
-* **Aviv Faraj** *
