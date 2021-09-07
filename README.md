@@ -16,7 +16,8 @@ and check wether they were leaked before using Have I Been Pwned database.
 
 ### Setup
 1. Clone repository
-2. Add either "py2app" or "py2exe" to the requirements.txt file:
+   ```git clone https://github.com/avivfaraj/password-manager.git```
+3. Add either "py2app" or "py2exe" to the requirements.txt file:
    - For Mac users open terminal at the repo folder and run:
      ```echo 'py2app' >>./requirements.txt```
    - For Windows user open cmd at the repo folder and run: 
