@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "password-manager-oop"
+version = "2.0.0"
+requires-python = ">=3.10"
+dependencies = [
+    "cryptography>=39",
+    "PySimpleGUI>=4.34",
+    "reportlab>=3.6",
+    "requests>=2.26",
+]
+
+[tool.setuptools.packages.find]
+include = ["password_manager*"]

@@ -1,0 +1,11 @@
+services:
+  password-manager:
+    build: .
+    image: pm:dev
+    container_name: password-manager
+    environment:
+      - DISPLAY=192.168.68.95:1
+    volumes:
+    - ./data:/app/data
+    stdin_open: true
+    tty: true

@@ -1,11 +1,5 @@
-certifi==2022.12.7
-cffi==1.14.6
-charset-normalizer==2.0.4
-cryptography==39.0.1
-idna==3.2
-Pillow>=9.0.0
-pycparser==2.20
-PySimpleGUI==4.34.0
-reportlab==3.6.1
-requests==2.26.0
-urllib3==1.26.6
+cryptography>=39
+PySimpleGUI>=4.34
+reportlab>=3.6
+requests>=2.26
+pytest>=7.0
