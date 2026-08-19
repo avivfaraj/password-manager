@@ -4,7 +4,7 @@ services:
     image: pm:dev
     container_name: password-manager
     environment:
-      - DISPLAY=${DISPLAY_IP}:1
+      - DISPLAY=${DISPLAY_IP:-host.docker.internal}:1
     volumes:
     - ./data:/app/data
     stdin_open: true

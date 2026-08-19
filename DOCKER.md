@@ -30,6 +30,12 @@ This GUI application requires X11 display forwarding.
 
 4. **Run the container:**
    ```bash
+   docker compose up
+   ```
+
+   Compose uses `host.docker.internal:0` by default. To use a specific host
+   address instead, set `DISPLAY_IP` before starting the container:
+   ```bash
    export DISPLAY_IP=$(ipconfig getifaddr en0)
    docker compose up
    ```
@@ -42,7 +48,8 @@ docker compose up
 ```
 
 The container connects to your X server using the configured `DISPLAY` environment variable.
-Set `DISPLAY_IP` to the host IP address before starting the container.
+On macOS, the default is `host.docker.internal:0`, which points to the XQuartz
+server on the Docker host.
 
 ## How It Works
 
@@ -77,7 +84,7 @@ docker compose down
 **macOS:**
 ```bash
 docker run --rm \
-  -e DISPLAY=:0 \
+   -e DISPLAY=host.docker.internal:0 \
   pm:dev
 ```
 
