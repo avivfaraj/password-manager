@@ -1,9 +1,8 @@
-import os
 import PySimpleGUI as sg
 
 from password_manager.services import CredentialNotFoundError, DuplicateCredentialError
 from password_manager.utilities import append_note
-from password_manager.gui.common import PasswordHelperView
+from password_manager.gui.common import PasswordHelperView, THEME, button_style, input_style, multiline_style
 
 
 class ManagerView:
@@ -64,28 +63,90 @@ class ManagerView:
         self.breach_checker = breach_checker
         self.pdf_exporter = pdf_exporter
         self.selected = None
+        self.credentials = []
 
     def _layout(self):
         """Create the main layout of the manager window.
 
         Returns
         -------
-        list
-            PySimpleGUI layout definition for the manager form and listbox.
+            list
+            PySimpleGUI layout definition for the manager form and credential table.
         """
         return [
-            [sg.Frame("Credential", [
-                [sg.Text("Application"), sg.Input(key="-app-", size=(30, 1))],
-                [sg.Text("Username"), sg.Input(key="-user-", size=(30, 1))],
-                [sg.Text("Password"), sg.Input(key="-pass-", size=(30, 1)), sg.Button("Help")],
-                [sg.Text("Comment"), sg.Multiline(key="-comment-", size=(30, 4))],
-                [sg.Button("Add"), sg.Button("Update"), sg.Button("Delete"), sg.Button("Search")],
-            ])],
             [
-                sg.Listbox([], size=(45, 20), enable_events=True, key="-list-"),
-                sg.Multiline(size=(45, 20), key="-message-", disabled=True),
+                sg.Text("Vault Dashboard", font=("Segoe UI", 28, "bold"), text_color=THEME["text"], pad=(20, (20, 10))),
+                sg.Push(),
+                sg.Text("Secure workspace", font=("Segoe UI", 11), text_color=THEME["muted"], pad=(0, (26, 0))),
             ],
-            [sg.Button("Change Master Password"), sg.Button("Create PDF"), sg.Button("Exit")],
+            [
+                sg.Column(
+                    [
+                        [sg.Text("Credentials", font=("Segoe UI", 16, "bold"), text_color=THEME["text"], pad=(0, (0, 10)))],
+                        [sg.Table(
+                            values=[],
+                            headings=["Application", "Username", "Last changed", "Date"],
+                            key="-list-",
+                            enable_events=True,
+                            select_mode="browse",
+                            justification="left",
+                            col_widths=[16, 15, 12, 10],
+                            auto_size_columns=False,
+                            row_height=28,
+                            font=("Segoe UI", 10),
+                            header_font=("Segoe UI", 10, "bold"),
+                            header_text_color=THEME["text"],
+                            header_background_color=THEME["panel_alt"],
+                            header_border_width=0,
+                            text_color=THEME["text"],
+                            background_color=THEME["field"],
+                            alternating_row_color=THEME["panel_alt"],
+                            selected_row_colors=(THEME["text"], THEME["accent"]),
+                            border_width=0,
+                            size=(50, 12),
+                            pad=(0, (0, 10)),
+                        )],
+                        [button_style("Search", "secondary", (12, 1), (0, (10, 0)))],
+                    ],
+                    background_color=THEME["panel"],
+                    pad=(20, 0),
+                ),
+                sg.Column(
+                    [
+                        [sg.Text("Credential details", font=("Segoe UI", 16, "bold"), text_color=THEME["text"], pad=(0, (0, 10)))],
+                        [sg.Text("Application", text_color=THEME["muted"], font=("Segoe UI", 10, "bold"), pad=(0, (10, 3)))],
+                        [input_style("-app-", size=(32, 1))],
+                        [sg.Text("Username", text_color=THEME["muted"], font=("Segoe UI", 10, "bold"), pad=(0, (10, 3)))],
+                        [input_style("-user-", size=(32, 1))],
+                        [sg.Text("Password", text_color=THEME["muted"], font=("Segoe UI", 10, "bold"), pad=(0, (10, 3)))],
+                        [input_style("-pass-", size=(32, 1)), button_style("Help", "warning", (8, 1))],
+                        [sg.Text("Comment", text_color=THEME["muted"], font=("Segoe UI", 10, "bold"), pad=(0, (10, 3)))],
+                        [multiline_style("-comment-", (34, 5))],
+                        [
+                            button_style("Add", "success", (11, 1), ((0, 10), 0)),
+                            button_style("Update", "primary", (11, 1), ((0, 10), 0)),
+                            button_style("Delete", "danger", (11, 1)),
+                        ],
+                    ],
+                    background_color=THEME["panel"],
+                    pad=(10, 0),
+                ),
+            ],
+            [
+                sg.Column(
+                    [
+                        [sg.Text("Activity log", font=("Segoe UI", 16, "bold"), text_color=THEME["text"], pad=(0, (0, 6)))],
+                        [multiline_style("-message-", (108, 6), disabled=True)],
+                    ],
+                    background_color=THEME["panel"],
+                    pad=(20, (10, 0)),
+                ),
+            ],
+            [
+                button_style("Change Master Password", "secondary", (20, 1), (20, (10, 10))),
+                button_style("Create PDF", "primary", (15, 1), (0, (10, 10))),
+                button_style("Exit", "danger", (12, 1), (0, (10, 10))),
+            ],
         ]
 
     def _message(self, window, message):
@@ -114,10 +175,12 @@ class ManagerView:
             loaded.
         """
         credentials = credentials if credentials is not None else self.vault.list(self.user_id)
-        window["-list-"].update([
+        self.credentials = list(credentials)
+        rows = [
             [c.application, c.username, c.time_modified, c.date_modified]
-            for c in credentials
-        ])
+            for c in self.credentials
+        ]
+        window["-list-"].update(values=rows)
 
     def _clear(self, window):
         """Clear the form fields and deselect the active credential.
@@ -142,8 +205,10 @@ class ManagerView:
         window = sg.Window(
             "Password Manager",
             self._layout(),
-            size=(950, 650),
+            size=(1200, 760),
             finalize=True,
+            background_color=THEME["bg"],
+            resizable=True,
         )
         self._refresh(window)
 
@@ -155,7 +220,9 @@ class ManagerView:
                     return
 
                 if event == "-list-" and values["-list-"]:
-                    app, username = values["-list-"][0][:2]
+                    credential_index = values["-list-"][0]
+                    credential_row = self.credentials[credential_index]
+                    app, username = credential_row.application, credential_row.username
                     try:
                         credential = self.vault.get(self.user_id, app, username)
                         self.selected = (app, username)
@@ -260,7 +327,6 @@ class ManagerView:
                         path = self.pdf_exporter.export(
                             self.vault.list(self.user_id),
                             master,
-                            os.path.join(os.getcwd(), "password.pdf"),
                         )
                         self._message(window, f"PDF created: {path}")
                     except Exception as exc:
@@ -272,10 +338,10 @@ class ManagerView:
     def _change_master_password(self, parent):
         """Open a modal dialog to update the current user's master password."""
         layout = [
-            [sg.Text("Current"), sg.Input(password_char="*", key="-current-")],
-            [sg.Text("New"), sg.Input(password_char="*", key="-new1-")],
-            [sg.Text("Repeat"), sg.Input(password_char="*", key="-new2-")],
-            [sg.Button("Generate"), sg.Button("Submit"), sg.Button("Exit")],
+            [sg.Text("Current"), input_style("-current-", password=True)],
+            [sg.Text("New"), input_style("-new1-", password=True)],
+            [sg.Text("Repeat"), input_style("-new2-", password=True)],
+            [button_style("Generate", "secondary"), button_style("Submit", "primary"), button_style("Exit", "danger")],
             [sg.Text("", key="-error-", size=(50, 2), text_color="red")],
         ]
 

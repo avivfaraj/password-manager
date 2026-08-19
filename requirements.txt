@@ -1,5 +1,6 @@
 cryptography>=39
 PySimpleGUI>=4.34
+customtkinter>=5.2
 reportlab>=3.6
 requests>=2.26
 pytest>=7.0
