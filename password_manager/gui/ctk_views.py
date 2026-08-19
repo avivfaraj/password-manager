@@ -396,11 +396,13 @@ class ManagerView:
         window = ctk.CTkToplevel()
         self.window = window
         configure_window(window, "Password Manager", "1200x900")
-        window.minsize(1000, 650)
+        window.minsize(1240, 760)
         window.grid_columnconfigure(0, weight=1)
         window.grid_columnconfigure(1, weight=1)
+        window.grid_rowconfigure(0, minsize=72)
         window.grid_rowconfigure(1, minsize=420, weight=1)
-        window.grid_rowconfigure(2, weight=0)
+        window.grid_rowconfigure(2, minsize=150, weight=0)
+        window.grid_rowconfigure(3, minsize=58, weight=0)
         make_label(window, "Vault dashboard", 28, True).grid(row=0, column=0, sticky="w", padx=28, pady=(24, 14))
         make_label(window, "Secure workspace", 12, False, COLORS["muted"]).grid(row=0, column=1, sticky="e", padx=28, pady=(24, 14))
 

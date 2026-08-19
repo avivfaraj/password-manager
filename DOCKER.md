@@ -30,6 +30,7 @@ This GUI application requires X11 display forwarding.
 
 4. **Run the container:**
    ```bash
+   export DISPLAY_IP=$(ipconfig getifaddr en0)
    docker compose up
    ```
 
@@ -41,6 +42,7 @@ docker compose up
 ```
 
 The container connects to your X server using the configured `DISPLAY` environment variable.
+Set `DISPLAY_IP` to the host IP address before starting the container.
 
 ## How It Works
 
