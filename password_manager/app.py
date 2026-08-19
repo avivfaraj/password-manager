@@ -1,5 +1,3 @@
-import PySimpleGUI as sg
-
 from password_manager.breach_checker import HIBPClient
 from password_manager.crypto import EncryptionService
 from password_manager.models import DatabasePair
@@ -8,7 +6,7 @@ from password_manager.pdf_exporter import PDFExporter
 from password_manager.repositories import VaultRepositories
 from password_manager.services import AuthenticationService, VaultService
 from password_manager.utilities import is_sqlite_path
-from password_manager.gui.login_view import LoginView
+from password_manager.gui.ctk_views import LoginView
 
 
 def create_services(keys_path, hash_path):
@@ -67,7 +65,6 @@ class PasswordManagerApp:
 
     def run(self):
         """Launch the login view and begin the application lifecycle."""
-        sg.theme("DarkTeal12")
         LoginView(
             self.crypto,
             self.generator,

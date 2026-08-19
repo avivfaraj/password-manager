@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 
 from password_manager.services import AuthenticationError
 from password_manager.utilities import is_sqlite_path
+from password_manager.gui.common import THEME, browse_style, button_style, input_style
 from password_manager.gui.manager_view import ManagerView
 from password_manager.gui.register_view import RegisterView
 
@@ -49,16 +50,51 @@ class LoginView:
             Displays the login dialog until the user exits or authenticates.
         """
         layout = [
-            [sg.Text("Password Manager", font=("Arial", 18))],
-            [sg.Text("Hash database"), sg.Input(key="-hash-", size=(45, 1)), sg.FileBrowse()],
-            [sg.Text("Key database"), sg.Input(key="-keys-", size=(45, 1)), sg.FileBrowse()],
-            [sg.Text("Username"), sg.Input(key="-user-", size=(30, 1))],
-            [sg.Text("Password"), sg.Input(key="-pass-", password_char="*", size=(30, 1))],
-            [sg.Text("", key="-error-", size=(60, 2), text_color="red")],
-            [sg.Button("Register"), sg.Button("Log In"), sg.Button("Exit")],
+            [
+                sg.Column(
+                    [
+                        [sg.Text("VaultGuard", font=("Segoe UI", 30, "bold"), text_color=THEME["text"], pad=(0, (10, 6)))],
+                        [sg.Text("Secure password management", font=("Segoe UI", 12), text_color=THEME["muted"], pad=(0, (0, 20)))],
+                        [sg.Text("Your vault is protected by end-to-end encryption and secure key storage.", font=("Segoe UI", 11), text_color=THEME["muted"], pad=(0, (0, 10)))],
+                        [sg.Text("", size=(26, 8), background_color=THEME["panel_alt"], pad=(0, (20, 0)))],
+                    ],
+                    background_color=THEME["panel_alt"],
+                    pad=(0, 0),
+                    size=(340, 520),
+                ),
+                sg.Column(
+                    [
+                        [sg.Text("Welcome back", font=("Segoe UI", 24, "bold"), text_color=THEME["text"], pad=(0, (30, 10)))],
+                        [sg.Text("Hash database", text_color=THEME["muted"], font=("Segoe UI", 10, "bold"), pad=(0, (10, 3)))],
+                        [input_style("-hash-", size=(42, 1)), browse_style("Browse")],
+                        [sg.Text("Key database", text_color=THEME["muted"], font=("Segoe UI", 10, "bold"), pad=(0, (10, 3)))],
+                        [input_style("-keys-", size=(42, 1)), browse_style("Browse")],
+                        [sg.Text("Username", text_color=THEME["muted"], font=("Segoe UI", 10, "bold"), pad=(0, (10, 3)))],
+                        [input_style("-user-", size=(30, 1))],
+                        [sg.Text("Password", text_color=THEME["muted"], font=("Segoe UI", 10, "bold"), pad=(0, (10, 3)))],
+                        [input_style("-pass-", password=True, size=(30, 1))],
+                        [sg.Text("", key="-error-", size=(48, 2), text_color=THEME["danger"], pad=(0, (10, 0)))],
+                        [
+                            button_style("Register", "secondary", (12, 1), ((0, 10), 0)),
+                            button_style("Log In", "primary", (12, 1), ((0, 10), 0)),
+                            button_style("Exit", "danger", (10, 1)),
+                        ],
+                    ],
+                    background_color=THEME["panel"],
+                    pad=(25, 20),
+                    size=(520, 520),
+                ),
+            ]
         ]
 
-        window = sg.Window("Log In", layout, finalize=True)
+        window = sg.Window(
+            "Log In",
+            layout,
+            finalize=True,
+            background_color=THEME["bg"],
+            size=(900, 560),
+            resizable=True,
+        )
         try:
             while True:
                 event, values = window.read()

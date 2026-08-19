@@ -20,7 +20,7 @@ class PDFExporter:
         Destination path for the generated PDF file. The default is ``password.pdf``.
     """
 
-    def export(self, credentials, password, output_path="password.pdf"):
+    def export(self, credentials, password, output_path="/app/data/password.pdf"):
         """Write a password-protected PDF export for a credential list.
 
         Parameters
@@ -30,7 +30,7 @@ class PDFExporter:
         password : str
             Password used to secure the PDF archive.
         output_path : str, optional
-            File path for the exported PDF. The default is ``password.pdf``.
+            File path for the exported PDF. The default is ``/app/data/password.pdf``.
 
         Returns
         -------
