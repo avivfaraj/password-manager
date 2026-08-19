@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-This GUI application requires X11 display forwarding. The setup is now simplified - just mount the X11 socket!
+This GUI application requires X11 display forwarding.
 
 ### System Requirements
 - Docker installed
@@ -17,12 +17,18 @@ This GUI application requires X11 display forwarding. The setup is now simplifie
    open -a XQuartz
    ```
 
-2. **Enable network connections in XQuartz:**
+2. **Allow the container to connect to XQuartz:**
+   In the XQuartz terminal, run:
+   ```bash
+   xhost +
+   ```
+
+3. **Enable network connections in XQuartz:**
    - Go to **XQuartz → Preferences → Security**
    - Enable "Allow connections from network clients"
    - Restart XQuartz (quit and reopen)
 
-3. **Run the container:**
+4. **Run the container:**
    ```bash
    docker compose up
    ```
