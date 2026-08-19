@@ -395,10 +395,11 @@ class ManagerView:
     def run(self, parent=None):
         window = ctk.CTkToplevel()
         self.window = window
-        configure_window(window, "Password Manager", "1200x760")
+        configure_window(window, "Password Manager", "1200x900")
+        window.minsize(1000, 650)
         window.grid_columnconfigure(0, weight=1)
         window.grid_columnconfigure(1, weight=1)
-        window.grid_rowconfigure(1, weight=1)
+        window.grid_rowconfigure(1, minsize=420, weight=1)
         window.grid_rowconfigure(2, weight=0)
         make_label(window, "Vault dashboard", 28, True).grid(row=0, column=0, sticky="w", padx=28, pady=(24, 14))
         make_label(window, "Secure workspace", 12, False, COLORS["muted"]).grid(row=0, column=1, sticky="e", padx=28, pady=(24, 14))
@@ -427,8 +428,25 @@ class ManagerView:
         self.table.bind("<<TreeviewSelect>>", self._select_credential)
         make_button(list_panel, "Search", self._search, "secondary", 120).grid(row=2, column=0, sticky="w", padx=18, pady=(0, 18))
 
-        form_panel = make_panel(window, row=1, column=1, sticky="nsew", padx=(12, 24), pady=(0, 12))
+        form_panel = ctk.CTkScrollableFrame(
+            window,
+            fg_color=COLORS["panel"],
+            corner_radius=16,
+            border_width=1,
+            border_color="#263b59",
+        )
+        form_panel.grid(row=1, column=1, sticky="nsew", padx=(12, 24), pady=(0, 12))
         form_panel.grid_columnconfigure(0, weight=1)
+        form_panel._scrollbar.grid_remove()
+
+        def update_form_scrollbar(_event=None):
+            if window.winfo_height() < 820:
+                form_panel._scrollbar.grid()
+            else:
+                form_panel._scrollbar.grid_remove()
+
+        window.bind("<Configure>", update_form_scrollbar)
+        window.after_idle(update_form_scrollbar)
         make_label(form_panel, "Credential details", 18, True).grid(row=0, column=0, sticky="w", padx=24, pady=(18, 14))
         self.form_entries = {}
         for row, label in enumerate(("Application", "Username"), 1):
