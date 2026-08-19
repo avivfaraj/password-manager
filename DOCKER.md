@@ -34,15 +34,12 @@ Simply run:
 docker compose up
 ```
 
-The container will automatically connect to your X server via the `/tmp/.X11-unix` socket.
+The container connects to your X server using the configured `DISPLAY` environment variable.
 
 ## How It Works
 
-The `docker-compose.yml` mounts:
-- **X11 Socket** (`/tmp/.X11-unix`) - for display communication
-- **Xauthority** (`~/.Xauthority`) - for X11 authentication
-
-This allows the containerized app to connect directly to your host's X11 server, just like a native application would.
+The `docker-compose.yml` configures the `DISPLAY` environment variable and mounts the
+application data directory for persistence.
 
 ## Building the Docker Image
 
@@ -73,8 +70,6 @@ docker compose down
 ```bash
 docker run --rm \
   -e DISPLAY=:0 \
-  -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
-  -v ~/.Xauthority:/tmp/.Xauthority:ro \
   pm:dev
 ```
 
@@ -82,8 +77,6 @@ docker run --rm \
 ```bash
 docker run --rm \
   -e DISPLAY=$DISPLAY \
-  -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
-  -v ~/.Xauthority:/tmp/.Xauthority:ro \
   pm:dev
 ```
 
@@ -127,18 +120,8 @@ Or check logs:
 docker compose logs password-manager
 ```
 
-### "Xauthority permission denied"
-
-If you get permission errors on the Xauthority file, make sure it's readable:
-
-```bash
-chmod 644 ~/.Xauthority
-```
-
 ## Notes
 
 - The container runs as a non-root user (`appuser`) for security
-- Xauthority is mounted as read-only (`ro`) for safety
 - Build dependencies are removed after installation to keep image size minimal
 - Persistent data can be stored in the `./data` volume
-- This approach uses native Unix socket forwarding (no TCP overhead)
