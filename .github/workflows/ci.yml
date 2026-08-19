@@ -16,4 +16,4 @@ jobs:
         run: docker build --tag password-manager:ci .
 
       - name: Run pytest in Docker container
-        run: docker run --rm --entrypoint pytest password-manager:ci -q
+        run: docker run --rm --entrypoint python --env PYTHONPATH=/app password-manager:ci -m pytest -q
